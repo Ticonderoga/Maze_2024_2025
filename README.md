@@ -2,7 +2,7 @@
 
 Projet réalisé en Informatique L2 à l'UFR-STGI. Jeu sur la base d'un labyrinthe avec un player se déplacant dans le labyrinthe. On pourra ajouter un ou plusieurs chasseurs *à la pacman*.
 
-##  Quelques sources d'inspiration
+## Quelques sources d'inspiration
 
 * https://github.com/jostbr/pymaze
 
