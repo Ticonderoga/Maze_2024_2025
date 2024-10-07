@@ -1,5 +1,7 @@
 # Jeu Maze L2 2024 / 2025
 
+Projet réalisé en Informatique L2 à l'UFR-STGI. Jeu sur la base d'un labyrinthe avec un player se déplacant dans le labyrinthe. On pourra ajouter un ou plusieurs chasseurs *à la pacman*.
+
 ##  Quelques sources d'inspiration
 
 * https://github.com/jostbr/pymaze
@@ -27,9 +29,9 @@
 
 Voilà la source principale pour la génération du labyrinthe
 
+* https://youtu.be/HyK_Q5rrcr4?si=6ZEfEd_gQ_HMOTdK
 * https://github.com/raulorteg/ai-maze-python
 * Algorithme DFS
   * https://en.wikipedia.org/wiki/Depth-first_search
   * https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search
   * https://www.algosome.com/articles/maze-generation-depth-first.html
-  * https://youtu.be/HyK_Q5rrcr4?si=6ZEfEd_gQ_HMOTdK
