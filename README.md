@@ -1,4 +1,5 @@
 # Jeu Maze L2 2024 / 2025
+
 ##  Quelques sources d'inspiration :
 
 * https://github.com/jostbr/pymaze
