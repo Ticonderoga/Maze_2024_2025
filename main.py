@@ -6,7 +6,7 @@ Created on Mon Oct  7 15:34:15 2024
 @author: phil
 """
 
-
+import time
 import pygame
 import networkx as nx
 import numpy as np
@@ -46,53 +46,100 @@ class Maze():
         self.graph = nx.grid_2d_graph(self.nb_cells_x, self.nb_cells_y)
         self.init_cell = (0,0)
         self.current_cell = self.init_cell
+        self.stack = []
         
         for cell in self.graph.nodes :
-            self.graph.nodes[cell]['top'] = cell[1]*self.dy
-            self.graph.nodes[cell]['bottom'] = (cell[1]+1)*self.dy
-            self.graph.nodes[cell]['left'] = cell[0]*self.dx
-            self.graph.nodes[cell]['right'] = (cell[0]+1)*self.dy
-            self.graph.nodes[cell]['visited'] = False
+            self.setcell(cell, 'top', cell[1]*self.dy )
+            self.setcell(cell, 'bottom',  (cell[1]+1)*self.dy)
+            self.setcell(cell, 'left', cell[0]*self.dx)
+            self.setcell(cell, 'right', (cell[0]+1)*self.dx)
+            self.setcell(cell, 'visited', False)
+        
+        for e in self.graph.edges :
+            self.graph.edges[e]['path'] = False
             
             
-            
+    def getcell(self,cell,attr) :
+        return self.graph.nodes[cell][attr]
     
-    def draw(self):
-        for cell in self.graph.nodes :
-            if self.graph.nodes[cell]['visited'] : # Cell in orange
-                pygame.draw.rect(screen, colors[5], [self.graph.nodes[cell]['left'], self.graph.nodes[cell]['top'],
-                                                 self.dx, self.dy], width=0)
-            else : # otherwise Cell in light green
-                pygame.draw.rect(screen, colors[0], [self.graph.nodes[cell]['left'], self.graph.nodes[cell]['top'],
-                                                 self.dx, self.dy], width=0)
+    def setcell(self,cell,attr,value):
+        self.graph.nodes[cell][attr]=value
             
+    def drawcell(self,cell,color) :
+        # wall_thickness = 2
+        pygame.draw.rect(screen, color, [self.getcell(cell,'left')+2, self.getcell(cell,'top')+2,
+                           self.dx-2, self.dy-2], width=0)
+        
+    def draw(self):
+        # wall_thickness = 2
+        for path in self.graph.edges :
+            start_cell, end_cell = path
+            if not self.graph[start_cell][end_cell]['path'] :
+                # a path with a False means a wall that will block the passage from
+                # start_cell to end_cell
+                if (start_cell[0] == end_cell[0]) and (start_cell[1] > end_cell[1]): 
+                    # blocked along the y axis and start_cell below end_cell 
+                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
+                                                (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), width=2)
+                elif (start_cell[0] == end_cell[0]) and (start_cell[1] < end_cell[1]): 
+                    # blocked along the y axis and start_cell above end_cell
+                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'bottom')), 
+                                                (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'bottom')), width=2)
+                elif (start_cell[0] > end_cell[0]) and (start_cell[1] == end_cell[1]): 
+                    # blocked along the x axis and start_cell on the right of end_cell
+                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
+                                                (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'bottom')), width=2)
+                elif (start_cell[0] < end_cell[0]) and (start_cell[1] == end_cell[1]): 
+                    # blocked along the x axis and start_cell on the left of end_cell
+                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), 
+                                                (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'bottom')), width=2)
                 
             
-    def one_step(self):
-        # test = True
-        # while test :
-        neighbors = list(nx.all_neighbors(self.graph, self.current_cell)) 
-        valid_neighbors = list(filter(lambda cell : not self.graph.nodes[cell]['visited'], neighbors))
-        if len(valid_neighbors)>=1:
-            next_cell = random.choice(valid_neighbors)
-            self.graph.nodes[self.current_cell]['visited'] = True
-            self.current_cell = next_cell
-        # else :
-        #     test = False
-            
-            
-            
-    
+    def generate(self,visual=False):
+        test = True
+        while test :
+            neighbors = list(nx.all_neighbors(self.graph, self.current_cell)) 
+            valid_neighbors = list(filter(lambda cell : not self.getcell(cell,'visited'), neighbors))
+            if len(valid_neighbors)>=1:
+                next_cell = random.choice(valid_neighbors)
+                self.setcell(next_cell, 'visited',  True)
+                self.stack.append(self.current_cell)
+                self.graph.edges[self.current_cell, next_cell]['path'] = True
+                self.current_cell = next_cell
+                if visual : # If you want to see the Maze generation
+                    self.drawcell(self.current_cell, colors[3])            
+                    pygame.display.flip()
+            elif len(self.stack)>0 :
+                
+                self.current_cell= self.stack.pop(-1)
+                
+            test = sum(nx.get_node_attributes(self.graph,"visited").values())<self.nb_cells
+        
+        # Valid graph 
+        # will be used to measure distance between prey and predator
+        self.valid_graph = self.graph.copy()
+        for path in self.valid_graph.edges :
+            if not self.valid_graph[path[0]][path[1]]['path'] :
+                self.valid_graph.remove_edge(*path)
         
     
 if __name__ == "__main__":
     frame_count = 0
     running = True
-    myMaze = Maze(30,20)
+    myMaze = Maze(30,15)
+    myMaze.generate(True)
+    screen.fill(colors[3])
+    myMaze.draw()
+    pygame.display.flip()
+    time.sleep(5)
+    start_cell = (3,3)
+    end_cell = (17,12)
+    path = nx.shortest_path(myMaze.valid_graph,start_cell,end_cell)
+    for cell in path : 
+        myMaze.drawcell(cell, colors[-1])
     
     while running:
-        myMaze.one_step()
-        myMaze.draw()
+        
         # Gestion des entrées au clavier
         for event in pygame.event.get():
             # Handle the closing
