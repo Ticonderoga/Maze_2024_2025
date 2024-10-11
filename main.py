@@ -9,7 +9,6 @@ Created on Mon Oct  7 15:34:15 2024
 import time
 import pygame
 import networkx as nx
-import numpy as np
 import random
 
 pygame.init()  # Initialise pygame
@@ -35,6 +34,8 @@ colors = [
     "#A3BE8C", # green
     "#B48EAD", # magenta
 ]
+
+player_img = pygame.image.load("./assets/mower_icon2_small.png")
 
 class Maze():
     def __init__(self,nb_cells_x=15,nb_cells_y=10):
@@ -79,19 +80,19 @@ class Maze():
                 # start_cell to end_cell
                 if (start_cell[0] == end_cell[0]) and (start_cell[1] > end_cell[1]): 
                     # blocked along the y axis and start_cell below end_cell 
-                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
+                    pygame.draw.line(screen, colors[2], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
                                                 (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), width=2)
                 elif (start_cell[0] == end_cell[0]) and (start_cell[1] < end_cell[1]): 
                     # blocked along the y axis and start_cell above end_cell
-                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'bottom')), 
+                    pygame.draw.line(screen, colors[2], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'bottom')), 
                                                 (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'bottom')), width=2)
                 elif (start_cell[0] > end_cell[0]) and (start_cell[1] == end_cell[1]): 
                     # blocked along the x axis and start_cell on the right of end_cell
-                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
+                    pygame.draw.line(screen, colors[2], (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'top')), 
                                                 (self.getcell(start_cell, 'left'), self.getcell(start_cell, 'bottom')), width=2)
                 elif (start_cell[0] < end_cell[0]) and (start_cell[1] == end_cell[1]): 
                     # blocked along the x axis and start_cell on the left of end_cell
-                    pygame.draw.line(screen, colors[1], (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), 
+                    pygame.draw.line(screen, colors[2], (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), 
                                                 (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'bottom')), width=2)
                 
             
@@ -121,25 +122,37 @@ class Maze():
         for path in self.valid_graph.edges :
             if not self.valid_graph[path[0]][path[1]]['path'] :
                 self.valid_graph.remove_edge(*path)
+
+class Player(pygame.sprite.Sprite):
+    def __init__(self, cell=(0,0)):
+        super().__init__()
+        self.cell = cell
+        self.x,self.y = cell
+        self.image = player_img
+        self.rect = self.image.get_rect()
         
+        
+    def draw(self):
+        screen.blit(self.image, self.rect)
+
     
 if __name__ == "__main__":
     frame_count = 0
     running = True
-    myMaze = Maze(30,15)
-    myMaze.generate(True)
-    screen.fill(colors[3])
+    myMaze = Maze(18,12)
+    myMaze.generate()
+    screen.fill(colors[-2])
     myMaze.draw()
-    pygame.display.flip()
-    time.sleep(5)
-    start_cell = (3,3)
-    end_cell = (17,12)
-    path = nx.shortest_path(myMaze.valid_graph,start_cell,end_cell)
-    for cell in path : 
-        myMaze.drawcell(cell, colors[-1])
-    
+    # pygame.display.flip()
+    # time.sleep(5)
+    # start_cell = (3,3)
+    # end_cell = (8,11)
+    # path = nx.shortest_path(myMaze.valid_graph,start_cell,end_cell)
+    # for cell in path : 
+    #     myMaze.drawcell(cell, colors[-1])
+    mow = Player()
     while running:
-        
+        mow.draw()
         # Gestion des entrées au clavier
         for event in pygame.event.get():
             # Handle the closing
