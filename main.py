@@ -37,8 +37,13 @@ colors = [
 
 player_img = pygame.image.load("./assets/mower_icon2_small.png")
 
-class Maze():
+class Maze(pygame.sprite.Sprite):
     def __init__(self,nb_cells_x=15,nb_cells_y=10):
+        super().__init__()
+        self.image = pygame.Surface([WIDTH, HEIGHT])
+        self.image.fill(colors[-2])
+        self.rect = self.image.get_rect()
+        
         self.nb_cells_x = nb_cells_x
         self.nb_cells_y = nb_cells_y
         self.nb_cells = self.nb_cells_x * self.nb_cells_y
@@ -72,6 +77,7 @@ class Maze():
                            self.dx-2, self.dy-2], width=0)
         
     def draw(self):
+        screen.blit(self.image, self.rect)
         # wall_thickness = 2
         for path in self.graph.edges :
             start_cell, end_cell = path
@@ -94,6 +100,7 @@ class Maze():
                     # blocked along the x axis and start_cell on the left of end_cell
                     pygame.draw.line(screen, colors[2], (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'top')), 
                                                 (self.getcell(start_cell, 'right'), self.getcell(start_cell, 'bottom')), width=2)
+        
                 
             
     def generate(self,visual=False):
@@ -130,10 +137,27 @@ class Player(pygame.sprite.Sprite):
         self.x,self.y = cell
         self.image = player_img
         self.rect = self.image.get_rect()
+        self.speed_x = 1
+        self.speed_y = 1
+        
         
         
     def draw(self):
         screen.blit(self.image, self.rect)
+        
+    def move(self,direction):
+        dx,dy = direction
+        # if direction == (1,0) : # to the right
+        self.rect.x = self.rect.x + self.speed_x*dx
+        self.x = self.rect.x
+        self.rect.y = self.rect.y + self.speed_y*dy
+        self.y = self.rect.y
+        self.cell = (self.x,self.y)
+        # print(self.cell)
+        self.draw()
+    
+        
+            
 
     
 if __name__ == "__main__":
@@ -141,7 +165,7 @@ if __name__ == "__main__":
     running = True
     myMaze = Maze(18,12)
     myMaze.generate()
-    screen.fill(colors[-2])
+    # screen.fill(colors[-2])
     myMaze.draw()
     # pygame.display.flip()
     # time.sleep(5)
@@ -151,8 +175,10 @@ if __name__ == "__main__":
     # for cell in path : 
     #     myMaze.drawcell(cell, colors[-1])
     mow = Player()
+    
     while running:
-        mow.draw()
+        myMaze.draw()
+        # mow.draw()
         # Gestion des entrées au clavier
         for event in pygame.event.get():
             # Handle the closing
@@ -164,13 +190,23 @@ if __name__ == "__main__":
                     print("Appui sur la barre espace")
             else:
                 keypressed = 0
-
-        # Pour K_RIGHT ou K_LEFT on peut laisser la touche enfoncée
+        
+        # touche enfoncée
         if keypressed == pygame.K_RIGHT:
-            print("Appui sur flèche droite")
+            mow.move((1,0))
         elif keypressed == pygame.K_LEFT:
-            print("Appui sur flèche gauche")
-
-                
+            mow.move((-1,0))
+        elif keypressed == pygame.K_DOWN:
+            mow.move((0,1))
+        elif keypressed == pygame.K_UP:
+            mow.move((0,-1))
+        else :
+            mow.draw()
+        
+            
+            
+        
+        # myMaze.draw()
+        # mow.draw()
         pygame.display.flip()
         clock.tick(FPS)
