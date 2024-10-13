@@ -35,3 +35,12 @@ Voilà la source principale pour la génération du labyrinthe
   * https://en.wikipedia.org/wiki/Depth-first_search
   * https://en.wikipedia.org/wiki/Maze_generation_algorithm#Randomized_depth-first_search
   * https://www.algosome.com/articles/maze-generation-depth-first.html
+
+## Exemple très proche de notre jeu
+
+Il s'agit d'un jeu de labyrinthe avec des cells et une entrée sortie
+
+* l'explication du code est sur : https://thepythoncode.com/article/build-a-maze-game-in-python
+* le code est sur Github : https://github.com/x4nth055/pythoncode-tutorials/tree/master/gui-programming/maze-game
+
+
