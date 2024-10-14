@@ -137,22 +137,27 @@ class Player(pygame.sprite.Sprite):
         self.x,self.y = cell
         self.image = player_img
         self.rect = self.image.get_rect()
-        self.speed_x = 1
-        self.speed_y = 1
+        self.speed_x = 5
+        self.speed_y = 5
         
         
         
     def draw(self):
         screen.blit(self.image, self.rect)
         
-    def move(self,direction):
-        dx,dy = direction
-        # if direction == (1,0) : # to the right
+    def move(self,direction,maze):
+        dx,dy = direction # Tuple with 0, 1 or -1 
+        self.cell = (self.x//maze.dx,self.y//maze.dy)
+        print("Position : ",self.cell)
+        neighbors = list(nx.all_neighbors(maze.valid_graph,self.cell))
+        print("Voisins : ",neighbors)
+        
+        
         self.rect.x = self.rect.x + self.speed_x*dx
         self.x = self.rect.x
         self.rect.y = self.rect.y + self.speed_y*dy
         self.y = self.rect.y
-        self.cell = (self.x,self.y)
+        
         # print(self.cell)
         self.draw()
     
@@ -193,13 +198,13 @@ if __name__ == "__main__":
         
         # touche enfoncée
         if keypressed == pygame.K_RIGHT:
-            mow.move((1,0))
+            mow.move((1,0),myMaze)
         elif keypressed == pygame.K_LEFT:
-            mow.move((-1,0))
+            mow.move((-1,0),myMaze)
         elif keypressed == pygame.K_DOWN:
-            mow.move((0,1))
+            mow.move((0,1),myMaze)
         elif keypressed == pygame.K_UP:
-            mow.move((0,-1))
+            mow.move((0,-1),myMaze)
         else :
             mow.draw()
         
