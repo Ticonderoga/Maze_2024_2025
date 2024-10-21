@@ -137,9 +137,9 @@ class Player(pygame.sprite.Sprite):
         self.x,self.y = cell
         self.image = player_img
         self.rect = self.image.get_rect()
-        self.largeur,self.hauteur = self.rect.size
-        self.speed_x = 1
-        self.speed_y = 1
+        self.width,self.height = self.rect.size
+        self.speed_x = 4
+        self.speed_y = 4
         
         
         
@@ -149,71 +149,49 @@ class Player(pygame.sprite.Sprite):
     def move(self,direction,maze):
         dx,dy = direction # Tuple with 0, 1 or -1 
         self.cell = (self.x//maze.dx,self.y//maze.dy)
-        # print("Position : ",self.cell)
-        neighbors = list(nx.all_neighbors(maze.valid_graph,self.cell))
-        # print("Voisins : ",neighbors)
+        valid_neighbors = list(nx.all_neighbors(maze.valid_graph,self.cell))
+        
+        # fake_rect which is one step ahead
         fake_rect = pygame.Rect(self.rect.x + self.speed_x*dx,
                                 self.rect.y + self.speed_y*dy,
-                                self.largeur,self.hauteur)
-        directions = []
+                                self.width,self.height)
+        
         valid_areas = []
-        for n in neighbors :
-            directions.append((n[0]-self.cell[0],n[1]-self.cell[1]))
-            if directions[-1] == (1,0) : # Right cell
-                left = maze.getcell(self.cell,'left')
-                top = maze.getcell(self.cell,'top')
-                bottom = maze.getcell(self.cell,'bottom')
+        
+        for n in valid_neighbors :
+            # default valid area is the current cell
+            left = maze.getcell(self.cell,'left')
+            top = maze.getcell(self.cell,'top')
+            bottom = maze.getcell(self.cell,'bottom')
+            right = maze.getcell(self.cell,'right')
+            
+            valid_direction = (n[0]-self.cell[0],n[1]-self.cell[1])
+
+            # change the valid area according to the direction
+            if valid_direction == (1,0) : # Right cell
                 right = maze.getcell(n,'right')
-                width = right - left
-                height = bottom - top 
-            elif directions[-1] == (-1,0) : # Left cell
+            elif valid_direction == (-1,0) : # Left cell
                 left = maze.getcell(n,'left')
-                top = maze.getcell(self.cell,'top')
-                bottom = maze.getcell(self.cell,'bottom')
-                right = maze.getcell(self.cell,'right')
-                width = right - left
-                height = bottom - top 
-            elif directions[-1] == (0,1) : # Down cell
-                left = maze.getcell(self.cell,'left')
-                top = maze.getcell(self.cell,'top')
+            elif valid_direction == (0,1) : # Down cell
                 bottom = maze.getcell(n,'bottom')
-                right = maze.getcell(self.cell,'right')
-                width = right - left
-                height = bottom - top 
-            elif directions[-1] == (0,-1) : # Up cell
-                left = maze.getcell(self.cell,'left')
+            elif valid_direction == (0,-1) : # Up cell
                 top = maze.getcell(n,'top')
-                bottom = maze.getcell(self.cell,'bottom')
-                right = maze.getcell(self.cell,'right')
-                width = right - left
-                height = bottom - top 
+
+            width = right - left
+            height = bottom - top 
             
             valid_areas.append(pygame.Rect(left,top,width,height))
-            
-        
-        
-        
+
         test_player  = [area.contains(self.rect) for area in valid_areas]
         test_fake = [area.contains(fake_rect) for area in valid_areas]
-        # test = self.rect.collidelist(valid_areas)
-        if True in test_player and True in test_fake: 
-            
-            self.rect.x = self.rect.x + self.speed_x*dx
+
+        if any(test_player) and any(test_fake): 
+            self.rect.move_ip(self.speed_x*dx, self.speed_y*dy )
             self.x = self.rect.x
-            self.rect.y = self.rect.y + self.speed_y*dy
             self.y = self.rect.y
 
-        
-        
-        # or self.x>self.cell[0]*maze.dx:
-        #     self.rect.x = self.rect.x + self.speed_x*dx
-        #     self.x = self.rect.x
-        #     self.rect.y = self.rect.y + self.speed_y*dy
-        #     self.y = self.rect.y
-            
-        # print(self.cell)
         self.draw()
-        pygame.draw.rect(self.image,(255, 0, 0), self.image.get_rect(), 1)
+        
         
             
 
@@ -221,7 +199,7 @@ class Player(pygame.sprite.Sprite):
 if __name__ == "__main__":
     frame_count = 0
     running = True
-    myMaze = Maze(9,6)
+    myMaze = Maze(18,12)
     myMaze.generate()
     # screen.fill(colors[-2])
     myMaze.draw()
@@ -260,11 +238,6 @@ if __name__ == "__main__":
             mow.move((0,-1),myMaze)
         else :
             mow.draw()
-        
-            
-            
-        
-        # myMaze.draw()
-        # mow.draw()
+
         pygame.display.flip()
         clock.tick(FPS)
