@@ -35,7 +35,7 @@ colors = [
     "#B48EAD", # magenta
 ]
 
-player_img = pygame.image.load("./assets/mower_icon2_small.png")
+player_img = pygame.image.load("./assets/mower_icon3_small.png")
 
 class Maze(pygame.sprite.Sprite):
     def __init__(self,nb_cells_x=15,nb_cells_y=10):
@@ -137,8 +137,9 @@ class Player(pygame.sprite.Sprite):
         self.x,self.y = cell
         self.image = player_img
         self.rect = self.image.get_rect()
-        self.speed_x = 5
-        self.speed_y = 5
+        self.largeur,self.hauteur = self.rect.size
+        self.speed_x = 1
+        self.speed_y = 1
         
         
         
@@ -148,19 +149,71 @@ class Player(pygame.sprite.Sprite):
     def move(self,direction,maze):
         dx,dy = direction # Tuple with 0, 1 or -1 
         self.cell = (self.x//maze.dx,self.y//maze.dy)
-        print("Position : ",self.cell)
+        # print("Position : ",self.cell)
         neighbors = list(nx.all_neighbors(maze.valid_graph,self.cell))
-        print("Voisins : ",neighbors)
+        # print("Voisins : ",neighbors)
+        fake_rect = pygame.Rect(self.rect.x + self.speed_x*dx,
+                                self.rect.y + self.speed_y*dy,
+                                self.largeur,self.hauteur)
+        directions = []
+        valid_areas = []
+        for n in neighbors :
+            directions.append((n[0]-self.cell[0],n[1]-self.cell[1]))
+            if directions[-1] == (1,0) : # Right cell
+                left = maze.getcell(self.cell,'left')
+                top = maze.getcell(self.cell,'top')
+                bottom = maze.getcell(self.cell,'bottom')
+                right = maze.getcell(n,'right')
+                width = right - left
+                height = bottom - top 
+            elif directions[-1] == (-1,0) : # Left cell
+                left = maze.getcell(n,'left')
+                top = maze.getcell(self.cell,'top')
+                bottom = maze.getcell(self.cell,'bottom')
+                right = maze.getcell(self.cell,'right')
+                width = right - left
+                height = bottom - top 
+            elif directions[-1] == (0,1) : # Down cell
+                left = maze.getcell(self.cell,'left')
+                top = maze.getcell(self.cell,'top')
+                bottom = maze.getcell(n,'bottom')
+                right = maze.getcell(self.cell,'right')
+                width = right - left
+                height = bottom - top 
+            elif directions[-1] == (0,-1) : # Up cell
+                left = maze.getcell(self.cell,'left')
+                top = maze.getcell(n,'top')
+                bottom = maze.getcell(self.cell,'bottom')
+                right = maze.getcell(self.cell,'right')
+                width = right - left
+                height = bottom - top 
+            
+            valid_areas.append(pygame.Rect(left,top,width,height))
+            
         
         
-        self.rect.x = self.rect.x + self.speed_x*dx
-        self.x = self.rect.x
-        self.rect.y = self.rect.y + self.speed_y*dy
-        self.y = self.rect.y
         
+        test_player  = [area.contains(self.rect) for area in valid_areas]
+        test_fake = [area.contains(fake_rect) for area in valid_areas]
+        # test = self.rect.collidelist(valid_areas)
+        if True in test_player and True in test_fake: 
+            
+            self.rect.x = self.rect.x + self.speed_x*dx
+            self.x = self.rect.x
+            self.rect.y = self.rect.y + self.speed_y*dy
+            self.y = self.rect.y
+
+        
+        
+        # or self.x>self.cell[0]*maze.dx:
+        #     self.rect.x = self.rect.x + self.speed_x*dx
+        #     self.x = self.rect.x
+        #     self.rect.y = self.rect.y + self.speed_y*dy
+        #     self.y = self.rect.y
+            
         # print(self.cell)
         self.draw()
-    
+        pygame.draw.rect(self.image,(255, 0, 0), self.image.get_rect(), 1)
         
             
 
@@ -168,7 +221,7 @@ class Player(pygame.sprite.Sprite):
 if __name__ == "__main__":
     frame_count = 0
     running = True
-    myMaze = Maze(18,12)
+    myMaze = Maze(9,6)
     myMaze.generate()
     # screen.fill(colors[-2])
     myMaze.draw()
