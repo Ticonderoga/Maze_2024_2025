@@ -36,6 +36,7 @@ colors = [
 ]
 
 player_img = pygame.image.load("./assets/mower_icon3_small.png")
+item_img = pygame.image.load("./assets/flower_small.png")
 
 class Maze(pygame.sprite.Sprite):
     def __init__(self,nb_cells_x=15,nb_cells_y=10):
@@ -193,6 +194,22 @@ class Player(pygame.sprite.Sprite):
         self.draw()
         
         
+class Item(pygame.sprite.Sprite):
+    
+    def __init__(self, cell,maze):
+        super().__init__()
+        self.cell = cell
+        self.x,self.y = cell[0]*maze.dx,cell[1]*maze.dx
+        self.image = item_img
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+        
+        self.width,self.height = self.rect.size
+        
+    
+    def draw(self) :
+        screen.blit(self.image, self.rect)
             
 
     
@@ -206,11 +223,24 @@ if __name__ == "__main__":
     # pygame.display.flip()
     # time.sleep(5)
     # start_cell = (3,3)
-    # end_cell = (8,11)
+    # end_cell = (8,5)
     # path = nx.shortest_path(myMaze.valid_graph,start_cell,end_cell)
     # for cell in path : 
-    #     myMaze.drawcell(cell, colors[-1])
+    #     myMaze.drawcell(cell, colors[3])
+    
     mow = Player()
+    
+    flowers = []
+    nb_flower = 5 
+    for i in range(nb_flower) :
+        x = random.randint(0,myMaze.nb_cells_x-1)
+        y = random.randint(0,myMaze.nb_cells_y-1)
+        rnd_cell = (x,y)
+        flowers.append(Item(rnd_cell,myMaze))
+        
+    pygame.display.flip()
+    
+    # time.sleep(5)
     
     while running:
         myMaze.draw()
@@ -238,6 +268,8 @@ if __name__ == "__main__":
             mow.move((0,-1),myMaze)
         else :
             mow.draw()
-
+        
+        for flower in flowers :
+            flower.draw()
         pygame.display.flip()
         clock.tick(FPS)
