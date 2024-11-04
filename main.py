@@ -199,7 +199,7 @@ class Item(pygame.sprite.Sprite):
     def __init__(self, cell,maze):
         super().__init__()
         self.cell = cell
-        self.x,self.y = cell[0]*maze.dx,cell[1]*maze.dx
+        self.x,self.y = cell[0]*maze.dx,cell[1]*maze.dy
         self.image = item_img
         self.rect = self.image.get_rect()
         self.rect.x = self.x
@@ -271,5 +271,10 @@ if __name__ == "__main__":
         
         for flower in flowers :
             flower.draw()
+            if flower.rect.colliderect(mow.rect) :
+                print("collision")
+            else :
+                print("no collision")
+                
         pygame.display.flip()
         clock.tick(FPS)
